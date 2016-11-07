@@ -90,6 +90,30 @@ char *get_dfu_alt_boot(char *interface, char *devstr)
 }
 #endif
 
+static void odroid_low_power(void)
+{
+	struct exynos4_clock *clk =
+	    (struct exynos4_clock*)samsung_get_base_clock();
+	struct exynos4_power *pwr =
+	    (struct exynos4_power*)samsung_get_base_power();
+
+	/* Turn off unnecessary power domains */
+	writel(0x0, &pwr->cam_configuration);
+	writel(0x0, &pwr->tv_configuration);
+	writel(0x0, &pwr->mfc_configuration);
+	writel(0x0, &pwr->g3d_configuration);
+	writel(0x0, &pwr->gps_configuration);
+	writel(0x0, &pwr->gps_alive_configuration);
+
+	/* Turn off unnecessary clocks */
+	writel(0x0, &clk->gate_ip_cam);
+	writel(0x0, &clk->gate_ip_tv);
+	writel(0x0, &clk->gate_ip_mfc);
+	writel(0x0, &clk->gate_ip_g3d);
+	writel(0x0, &clk->gate_ip_image);
+	writel(0x0, &clk->gate_ip_gps);
+}
+
 static void board_clock_init(void)
 {
 	unsigned int set, clr, clr_src_cpu, clr_pll_con0, clr_src_dmc;
@@ -429,6 +453,8 @@ int exynos_power_init(void)
 
 	if (regulator_list_autoset(mmc_regulators, NULL, true))
 		pr_err("Unable to init all mmc regulators\n");
+
+	odroid_low_power();
 
 	return 0;
 }
