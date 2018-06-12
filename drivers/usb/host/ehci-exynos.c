@@ -21,6 +21,8 @@
 #include <linux/compat.h>
 #include "ehci.h"
 
+extern int exynos_usb_init(void);
+
 /* Declare global data pointer */
 DECLARE_GLOBAL_DATA_PTR;
 
@@ -215,6 +217,9 @@ static int ehci_usb_probe(struct udevice *dev)
 	struct exynos_ehci_platdata *plat = dev_get_platdata(dev);
 	struct exynos_ehci *ctx = dev_get_priv(dev);
 	struct ehci_hcor *hcor;
+
+	if (exynos_usb_init())
+		return -1;
 
 	ctx->hcd = (struct ehci_hccr *)plat->hcd_base;
 	ctx->usb = (struct exynos_usb_phy *)plat->phy_base;

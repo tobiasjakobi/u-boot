@@ -416,7 +416,6 @@ static void board_gpio_init(void)
 
 	gpio_direction_output(EXYNOS4X12_GPIO_C10, 0);
 
-#ifdef CONFIG_CMD_USB
 	/* USB3503A Reference frequency */
 	gpio_request(EXYNOS4X12_GPIO_X30, "USB3503A RefFreq");
 
@@ -425,7 +424,6 @@ static void board_gpio_init(void)
 
 	/* USB3503A Reset */
 	gpio_request(EXYNOS4X12_GPIO_X35, "USB3503A Reset");
-#endif
 }
 
 int exynos_early_init_f(void)
@@ -486,11 +484,8 @@ struct dwc2_plat_otg_data s5pc210_otg_data = {
 };
 #endif
 
-#if defined(CONFIG_USB_GADGET) || defined(CONFIG_CMD_USB)
-
-int board_usb_init(int index, enum usb_init_type init)
+int exynos_usb_init(void)
 {
-#ifdef CONFIG_CMD_USB
 	struct udevice *dev;
 	int ret;
 
@@ -533,8 +528,11 @@ int board_usb_init(int index, enum usb_init_type init)
 		pr_err("Regulator %s value setting error: %d\n", dev->name, ret);
 		return ret;
 	}
-#endif
+
+#if defined(CONFIG_USB_GADGET)
 	debug("USB_udc_probe\n");
 	return dwc2_udc_probe(&s5pc210_otg_data);
-}
+#else
+	return 0;
 #endif
+}
